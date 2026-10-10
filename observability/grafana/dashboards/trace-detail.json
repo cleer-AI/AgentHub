@@ -1,0 +1,28 @@
+{
+  "annotations": {"list": []},
+  "editable": true,
+  "panels": [
+    {
+      "type": "traces", "title": "Trace", "id": 1,
+      "gridPos": {"h": 14, "w": 24, "x": 0, "y": 0},
+      "datasource": {"type": "tempo", "uid": "tempo"},
+      "targets": [{"query": "$traceId", "queryType": "traceId", "refId": "A"}]
+    },
+    {
+      "type": "logs", "title": "Correlated Logs", "id": 2,
+      "gridPos": {"h": 10, "w": 24, "x": 0, "y": 14},
+      "datasource": {"type": "loki", "uid": "loki"},
+      "targets": [{"expr": "{service_name=\"super-biz-agent\"} | json | traceId=\"$traceId\"", "refId": "A"}]
+    }
+  ],
+  "refresh": false,
+  "schemaVersion": 39,
+  "tags": ["agent", "trace"],
+  "templating": {
+    "list": [{"name": "traceId", "type": "textbox", "label": "Trace ID", "query": "", "current": {"text": "", "value": ""}}]
+  },
+  "time": {"from": "now-1h", "to": "now"},
+  "title": "SuperBizAgent - Trace Detail",
+  "uid": "superbiz-agent-trace-detail",
+  "version": 1
+}

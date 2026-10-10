@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <customFields>{"service_name":"super-biz-agent"}</customFields>
+            <includeMdc>true</includeMdc>
+            <jsonGeneratorDecorator class="net.logstash.logback.mask.MaskingJsonGeneratorDecorator">
+                <valueMask>
+                    <value><![CDATA[(?i)(bearer\s+)[a-z0-9._~+/=-]+]]></value>
+                    <mask>$1***</mask>
+                </valueMask>
+                <valueMask>
+                    <value><![CDATA[(?i)((api[-_ ]?key|password|secret|token)["'=:\s]+)[^\s,"]+]]></value>
+                    <mask>$1***</mask>
+                </valueMask>
+            </jsonGeneratorDecorator>
+        </encoder>
+    </appender>
+
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/superbiz-agent.json</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>logs/superbiz-agent.%d{yyyy-MM-dd}.%i.json.gz</fileNamePattern>
+            <maxFileSize>50MB</maxFileSize>
+            <maxHistory>7</maxHistory>
+        </rollingPolicy>
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <customFields>{"service_name":"super-biz-agent"}</customFields>
+            <includeMdc>true</includeMdc>
+            <jsonGeneratorDecorator class="net.logstash.logback.mask.MaskingJsonGeneratorDecorator">
+                <valueMask>
+                    <value><![CDATA[(?i)(bearer\s+)[a-z0-9._~+/=-]+]]></value>
+                    <mask>$1***</mask>
+                </valueMask>
+                <valueMask>
+                    <value><![CDATA[(?i)((api[-_ ]?key|password|secret|token)["'=:\s]+)[^\s,"]+]]></value>
+                    <mask>$1***</mask>
+                </valueMask>
+            </jsonGeneratorDecorator>
+        </encoder>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE"/>
+    </root>
+</configuration>

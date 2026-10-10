@@ -1,0 +1,67 @@
+{
+  "annotations": {"list": []},
+  "editable": true,
+  "graphTooltip": 1,
+  "panels": [
+    {
+      "type": "stat", "title": "Agent Requests / 5m", "id": 1,
+      "gridPos": {"h": 5, "w": 6, "x": 0, "y": 0},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [{"expr": "sum(increase(agent_operation_total{operation=~\"agent.chat|agent.chat_stream\"}[5m]))", "refId": "A"}]
+    },
+    {
+      "type": "stat", "title": "Error Rate", "id": 2,
+      "gridPos": {"h": 5, "w": 6, "x": 6, "y": 0},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [{"expr": "sum(rate(agent_operation_total{status=\"error\"}[5m])) / clamp_min(sum(rate(agent_operation_total[5m])), 0.001)", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "percentunit"}, "overrides": []}
+    },
+    {
+      "type": "stat", "title": "First Token P95", "id": 3,
+      "gridPos": {"h": 5, "w": 6, "x": 12, "y": 0},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [{"expr": "histogram_quantile(0.95, sum(rate(agent_sse_first_token_seconds_bucket[5m])) by (le))", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "s"}, "overrides": []}
+    },
+    {
+      "type": "stat", "title": "Runtime Limits / 1h", "id": 4,
+      "gridPos": {"h": 5, "w": 6, "x": 18, "y": 0},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [{"expr": "sum(increase(agent_loop_limit_total[1h]))", "refId": "A"}]
+    },
+    {
+      "type": "timeseries", "title": "Stage P95 Duration", "id": 5,
+      "gridPos": {"h": 9, "w": 12, "x": 0, "y": 5},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [{"expr": "histogram_quantile(0.95, sum(rate(agent_operation_duration_seconds_bucket[5m])) by (le, operation))", "legendFormat": "{{operation}}", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "s"}, "overrides": []}
+    },
+    {
+      "type": "timeseries", "title": "Retries by Dependency", "id": 6,
+      "gridPos": {"h": 9, "w": 12, "x": 12, "y": 5},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [{"expr": "sum(rate(agent_retry_total[5m])) by (operation, reason)", "legendFormat": "{{operation}} / {{reason}}", "refId": "A"}]
+    },
+    {
+      "type": "timeseries", "title": "Tool Calls", "id": 7,
+      "gridPos": {"h": 9, "w": 12, "x": 0, "y": 14},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [{"expr": "sum(rate(agent_tool_call_total[5m])) by (tool, status)", "legendFormat": "{{tool}} / {{status}}", "refId": "A"}]
+    },
+    {
+      "type": "logs", "title": "Recent Agent Errors", "id": 8,
+      "gridPos": {"h": 9, "w": 12, "x": 12, "y": 14},
+      "datasource": {"type": "loki", "uid": "loki"},
+      "targets": [{"expr": "{service_name=\"super-biz-agent\"} | json | level=\"ERROR\"", "refId": "A"}]
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 39,
+  "tags": ["agent", "observability"],
+  "templating": {"list": []},
+  "time": {"from": "now-1h", "to": "now"},
+  "timezone": "browser",
+  "title": "SuperBizAgent - Runtime Overview",
+  "uid": "superbiz-agent-overview",
+  "version": 1
+}

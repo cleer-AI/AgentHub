@@ -1,0 +1,159 @@
+server:
+  port: 9900
+
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: ${JWT_EXPIRATION:86400000}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      show-details: when_authorized
+  tracing:
+    sampling:
+      probability: ${TRACING_SAMPLING_PROBABILITY:1.0}
+  otlp:
+    tracing:
+      endpoint: ${OTEL_EXPORTER_OTLP_TRACES_ENDPOINT:http://localhost:4318/v1/traces}
+      timeout: 3s
+  observations:
+    key-values:
+      service.name: super-biz-agent
+  metrics:
+    distribution:
+      percentiles-histogram:
+        agent.operation.duration: true
+        agent.sse.first.token: true
+        agent.sse.send.duration: true
+
+observability:
+  agent:
+    max-duration: 240s
+    max-model-calls: 12
+    max-tool-calls: 20
+    max-same-tool-calls: 3
+  sse:
+    timeout: 300s
+  privacy:
+    hmac-secret: ${TELEMETRY_HMAC_SECRET}
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+
+file:
+  upload:
+    path: ./uploads
+    allowed-extensions: txt,md,pdf
+  background:
+    image: /images/background.jpg
+
+milvus:
+  host: localhost
+  port: 19530
+  username: ""
+  password: ""
+  database: default
+  timeout: 10000
+
+# Spring AI Alibaba DashScope 配置
+spring:
+  config:
+    import: optional:file:.env[.properties]
+  application:
+    name: super-biz-agent
+  datasource:
+    url: jdbc:mysql://localhost:3306/ai_assistant_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: root
+    password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  
+  # MyBatis-Plus 配置
+  mybatis-plus:
+    configuration:
+      map-underscore-to-camel-case: true
+      log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    global-config:
+      db-config:
+        id-type: auto
+
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+  ai:
+    dashscope:
+      api-key: ${DASHSCOPE_API_KEY}
+      chat:
+        options:
+          timeout: 180000  # 超时时间180秒（3分钟）
+      retry:
+        max-attempts: 3  # 最大重试次数
+        backoff:
+          initial-interval: 2000  # 初始重试间隔2秒
+          multiplier: 2  # 重试间隔倍数
+          max-interval: 10000  # 最大重试间隔10秒
+    
+    # Spring AI MCP 客户端配置
+    # 如果使用mock数据，请注释这部分内容
+    mcp:
+      client:
+        enabled: false
+        name: tencent-mcp-server
+        version: 1.0.0
+        request-timeout: 60s
+        type: ASYNC
+        sse:
+          connections:
+            tencent-cls:
+              url: https://mcp-api.tencent-cloud.com
+              sse-endpoint: ${TENCENT_MCP_SSE_ENDPOINT:/sse/replace-with-your-endpoint}
+
+# 阿里云 DashScope Embedding API 配置
+dashscope:
+  api:
+    key: ${DASHSCOPE_API_KEY}
+  embedding:
+    model: text-embedding-v4  # 阿里云文本向量化模型
+
+# 文档分片配置
+document:
+  chunk:
+    max-size: 800  # 每个分片最大字符数
+    overlap: 100   # 分片之间的重叠字符数
+  pdf:
+    image:
+      enabled: ${PDF_IMAGE_PROCESSING_ENABLED:true}
+      min-width: 120
+      min-height: 120
+      min-page-area-ratio: 0.01
+      max-images-per-document: 50
+      related-text-limit: 2
+      summary-model: ${PDF_IMAGE_SUMMARY_MODEL:qwen-vl-max}
+
+minio:
+  enabled: ${MINIO_ENABLED:true}
+  endpoint: ${MINIO_ENDPOINT:http://localhost:9000}
+  access-key: ${MINIO_ACCESS_KEY:minioadmin}
+  secret-key: ${MINIO_SECRET_KEY:minioadmin}
+  bucket: ${MINIO_BUCKET:superbiz-documents}
+
+# RAG 配置
+rag:
+  top-k: 3  # 检索返回的最相似文档数量
+  model: "qwen-turbo"  # 大语言模型名称 qwen3-max
+
+# Prometheus 配置
+prometheus:
+  base-url: http://localhost:9090
+  timeout: 10  # 超时时间（秒）
+  mock-enabled: false  # 是否启用 Mock 模式（用于测试）
+
+# CLS 云日志服务配置
+cls:
+  mock-enabled: false  # 是否启用 Mock 模式（用于测试，设为 true 返回与告警关联的模拟日志数据）

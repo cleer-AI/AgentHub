@@ -1,0 +1,113 @@
+file:
+  upload:
+    path: ./uploads
+    allowed-extensions: txt,md,pdf
+  background:
+    image: /images/background.jpg
+
+milvus:
+  host: ${MILVUS_HOST}
+  port: ${MILVUS_PORT:19530}
+  username: ""
+  password: ""
+  database: default
+  timeout: 10000
+
+# Spring AI Alibaba DashScope 配置
+spring:
+  config:
+    import: optional:file:.env[.properties]
+  application:
+    name: super-biz-agent
+  datasource:
+    url: jdbc:mysql://${DB_HOST}:${DB_PORT:3306}/${DB_NAME:ai_assistant_db}?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  # MyBatis-Plus 配置
+  mybatis-plus:
+    configuration:
+      map-underscore-to-camel-case: true
+      log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    global-config:
+      db-config:
+        id-type: auto
+
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+  ai:
+    dashscope:
+      api-key: ${DASHSCOPE_API_KEY}
+      chat:
+        options:
+          timeout: 180000  # 超时时间180秒（3分钟）
+      retry:
+        max-attempts: 3  # 最大重试次数
+        backoff:
+          initial-interval: 2000  # 初始重试间隔2秒
+          multiplier: 2  # 重试间隔倍数
+          max-interval: 10000  # 最大重试间隔10秒
+
+    # Spring AI MCP 客户端配置
+    # 如果使用mock数据，请注释这部分内容
+    mcp:
+      client:
+        enabled: true
+        name: tencent-mcp-server
+        version: 1.0.0
+        request-timeout: 60s
+        type: ASYNC
+        sse:
+          connections:
+            tencent-cls:
+              url: ${TENCENT_MCP_URL}
+              sse-endpoint: ${TENCENT_MCP_SSE_ENDPOINT}
+
+# 阿里云 DashScope Embedding API 配置
+dashscope:
+  api:
+    key: ${DASHSCOPE_API_KEY}
+  embedding:
+    model: text-embedding-v4  # 阿里云文本向量化模型
+
+# 文档分片配置
+document:
+  chunk:
+    max-size: 800  # 每个分片最大字符数
+    overlap: 100   # 分片之间的重叠字符数
+  pdf:
+    image:
+      enabled: ${PDF_IMAGE_PROCESSING_ENABLED:true}
+      min-width: 120
+      min-height: 120
+      min-page-area-ratio: 0.01
+      max-images-per-document: 50
+      related-text-limit: 2
+      summary-model: ${PDF_IMAGE_SUMMARY_MODEL:qwen-vl-max}
+
+minio:
+  enabled: ${MINIO_ENABLED:true}
+  endpoint: ${MINIO_ENDPOINT}
+  access-key: ${MINIO_ACCESS_KEY}
+  secret-key: ${MINIO_SECRET_KEY}
+  bucket: ${MINIO_BUCKET:superbiz-documents}
+
+# RAG 配置
+rag:
+  top-k: 3  # 检索返回的最相似文档数量
+  model: "qwen-turbo"  # 大语言模型名称 qwen3-max
+
+# Prometheus 配置
+prometheus:
+  base-url: http://localhost:9090
+  timeout: 10  # 超时时间（秒）
+  mock-enabled: false  # 是否启用 Mock 模式（用于测试）
+
+# CLS 云日志服务配置
+cls:
+  mock-enabled: false  # 是否启用 Mock 模式（用于测试，设为 true 返回与告警关联的模拟日志数据）
+skill:
+  base-path: ./skills
